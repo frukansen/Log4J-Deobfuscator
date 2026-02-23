@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log4j JNDI Deobfuscator | Çevrimdışı Analiz Aracı</title>
+    <style>
+        body { 
+            background-color: #121212; 
+            color: #e0e0e0; 
+            font-family: 'Consolas', 'Courier New', monospace; 
+            padding: 20px; 
+            margin: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .header { 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px; 
+        }
+        h2 { color: #4caf50; margin-bottom: 5px; }
+        p { color: #888; font-size: 14px; margin-top: 0; }
+        textarea { 
+            width: 100%; 
+            height: 250px; 
+            background-color: #1e1e1e; 
+            color: #a6e22e; 
+            border: 1px solid #444; 
+            padding: 15px; 
+            font-family: 'Consolas', monospace; 
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        textarea:focus { outline: none; border-color: #4caf50; }
+        button { 
+            background-color: #4caf50; 
+            color: #121212; 
+            border: none; 
+            padding: 12px 24px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            margin-top: 15px; 
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #45a049; }
+        #resultArea { 
+            margin-top: 25px; 
+            padding: 15px; 
+            background-color: #1e1e1e; 
+            border: 1px solid #444; 
+            min-height: 120px; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+            color: #ff5555; 
+            border-radius: 4px;
+        }
+        .line-number { color: #888; margin-right: 10px; user-select: none; }
+        .success-text { color: #a6e22e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Log4j JNDI Deobfuscator</h2>
+            <p>100% Çevrimdışı (Offline) çalışır. Veriler cihaz dışına çıkmaz.</p>
+        </div>
+
+        <label for="logInput" style="font-weight: bold;">WAF / Web Loglarını Yapıştırın (Çok satırlı desteklenir):</label>
+        <br><br>
+        <textarea id="logInput" placeholder="Ham WAF loglarını, HTTP başlıklarını veya URI parametrelerini buraya yapıştırın... (Örn: %24%7B0r%3An%3A-a%7D...)"></textarea>
+        <br>
+        <button onclick="processLogs()">C2/Komut Çıkar</button>
+
+        <h3 style="color: #4caf50; margin-top: 30px;">Çözümlenen Sonuçlar:</h3>
+        <div id="resultArea"><span style="color: #888;">Sonuçlar burada listelenecek...</span></div>
+    </div>
+<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #333; color: #555; font-size: 13px; font-family: 'Consolas', monospace;">
+            Developed for SOC Operations by <span style="color: #4caf50; font-weight: bold;">Furkan Şen</span>
+        </div>
+    <script>
+        function processLogs() {
+            const input = document.getElementById('logInput').value;
+            const resultDiv = document.getElementById('resultArea');
+            resultDiv.innerHTML = ''; 
+
+            if (!input.trim()) {
+                resultDiv.innerHTML = '<span style="color: #888;">Lütfen işlenecek veriyi girin.</span>';
+                return;
+            }
+
+            const lines = input.split('\n');
+            let foundAnyCount = 0;
+            let outputHtml = '';
+
+            lines.forEach((line, index) => {
+                if (line.trim() === '') return;
+
+                try {
+                    // İlk adım: URL Decode
+                    const decodedLine = decodeURIComponent(line);
+                    
+                    // İkinci adım: Regex ile paterni yakalama
+                    const matches = [...decodedLine.matchAll(/:-([^}]*)\}/g)];
+                    
+                    if (matches.length > 0) {
+                        foundAnyCount++;
+                        const extractedData = matches.map(m => m[1]).join('');
+                        outputHtml += `<span class="line-number">[Satır ${index + 1}]</span> <span class="success-text">${extractedData}</span><br>`;
+                    }
+                } catch (e) {
+                    // Geçersiz URL encode formatı gelirse (URIError), o satırı atla
+                }
+            });
+
+            if (foundAnyCount > 0) {
+                outputHtml = `<div style="margin-bottom: 10px; color: #888;">Toplam <b>${foundAnyCount}</b> adet şüpheli veri çıkarıldı:</div>` + outputHtml;
+                resultDiv.innerHTML = outputHtml;
+            } else {
+                resultDiv.innerHTML = '<span style="color: #888;">Bu loglarda belirtilen JNDI varsayılan değer manipülasyonu (default value obfuscation) bulunamadı.</span>';
+            }
+        }
+    </script>
+</body>
+</html>
