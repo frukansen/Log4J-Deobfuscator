@@ -1,13 +1,8 @@
-# Log4J-Deobfuscator
-A 100% offline, browser-based Log4j deobfuscator. Built to safely extract hidden C2 addresses from raw enterprise logs without risking data leaks.
-
-
 # Log4j JNDI Deobfuscator for SOC Analysts
 
 ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=flat&logo=html5&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=flat&logo=javascript&logoColor=%23F7DF1E)
 ![Offline](https://img.shields.io/badge/Status-100%25%20Offline-success)
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
 A lightweight, purely client-side, and privacy-first HTML/JS tool designed for Blue Team and SOC analysts to quickly deobfuscate Log4j payload variations (specifically JNDI default value manipulations) found in WAF, proxy, or web server logs.
 
